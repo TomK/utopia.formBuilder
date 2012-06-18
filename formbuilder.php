@@ -6,11 +6,12 @@ class formBuilder_Forms extends uTableDef {
 	function SetupFields() {
 		$this->AddField('form_id',ftNUMBER);
 		$this->AddField('name',ftVARCHAR,50);
-		$this->AddField('recipient',ftVARCHAR,50);
+		$this->AddField('recipient',ftVARCHAR,255);
 		
 		$this->AddField('form_header',ftTEXT);
 		
 		$this->AddField('screen_response',ftTEXT);
+		$this->AddField('email_response_subject',ftVARCHAR,250);
 		$this->AddField('email_response',ftTEXT);
 		
 		$this->SetPrimaryKey('form_id');
@@ -44,13 +45,13 @@ class formBuilderAdmin_FormsDetail extends uSingleDataModule implements iAdminMo
 	public function SetupFields() {
 		$this->CreateTable('forms');
 		$this->AddField('name','name','forms','Form Name',itTEXT);
-		$this->AddField('form_header','form_header','forms','Form Header',itTEXT);
-		$this->AddField('screen_response','screen_response','forms','Successful Response (on screen)',itTEXT);
-		$this->AddSpacer();
-		$this->AddField('formshow',array($this,'showForm'),'','Preview');
-		$this->NewSection('Emails');
 		$this->AddField('recipient','recipient','forms','Form Recipient',itTEXT);
-		$this->AddField('email_response','email_response','forms','Email Response',itTEXTAREA);
+		$this->AddField('form_header','form_header','forms','Form Header',itTEXT);
+		$this->AddField('screen_response','screen_response','forms','Successful Response (on screen)',itRICHTEXT);
+		$this->AddSpacer();
+		$this->NewSection('Email Response');
+		$this->AddField('email_response_subject','email_response_subject','forms','Subject',itTEXT);
+		$this->AddField('email_response','email_response','forms','Content',itTEXTAREA);
 	}
 	public function UpdateField($fieldAlias,$newValue,&$pkVal=NULL) {
 		if ($fieldAlias == 'name') $newValue = UrlReadable($newValue);
@@ -72,6 +73,9 @@ class formBuilder_Fields extends uTableDef {
 		$this->AddField('type',ftVARCHAR,50);
 		$this->AddField('default',ftVARCHAR,50);
 		$this->AddField('values',ftVARCHAR,50);
+		$this->AddField('required',ftBOOL);
+		$this->AddField('email',ftBOOL);
+		$this->AddField('validation',ftVARCHAR,100);
 		
 		$this->SetFieldProperty('type','default',itTEXT);
 		
@@ -94,9 +98,15 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('form_name','name','form','Form');
 		
 		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array('Disable'=>itNONE,'Text Box'=>itTEXT,'Multiline Text'=>itTEXTAREA,'Email'=>'email','File Upload'=>itFILE));
-		$this->AddField('default','default','fields','default',itTEXT);
-		$this->AddField('values','values','fields','values',itTEXT);
+		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Disable',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itFILE=>'File Upload'));
+		$this->AddField('default','default','fields','Default',itTEXT);
+		
+		// validation
+		$this->AddField('required','required','fields','Required',itCHECKBOX);
+		$this->AddField('email','email','fields','Email',itCHECKBOX);
+		$this->AddField('validation','validation','fields','Validation (Regex)',itTEXT);
+		
+		$this->AddField('values','values','fields');
 		
 		$this->AddFilter('form_id',ctEQ,itNONE);
 		$this->AddFilter('form_name',ctEQ,itNONE);
@@ -159,14 +169,26 @@ class formBuilder_ShowForm extends uDataModule {
 		if (!$fields) return 'No Fields Found';
 		
 		do if (isset($_POST['form_id']) && $_POST['form_id'] == $id) {
+			// validation
 			$verified = true;
 			foreach ($fields as $k=> $field) {
+				if (!$field['type']) continue;
+				if (!$field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) continue;
+				
 				// verify form fields, add [error]s if needed
-				if ($field['type'] == 'email' && !preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i',$_POST['fb-field-'.$field['field_id']])) {
+				if ($field['email'] && !preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i',$_POST['fb-field-'.$field['field_id']])) {
 					$fields[$k]['error'] = 'You must enter a valid email address';
-					$verified = false;
+					$verified = false; continue;
+				}
+				if ($field['validation'] && !preg_match('/'.$field['validation'].'/i',$_POST['fb-field-'.$field['field_id']])) {
+					$fields[$k]['error'] = 'This field does not match the required format.';
+					$verified = false; continue;
 				}
 				// required?
+				if ($field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) {
+					$fields[$k]['error'] = 'This field is required.';
+					$verified = false; continue;
+				}
 			}
 			// break if not verified
 			if (!$verified) break;
@@ -190,11 +212,23 @@ class formBuilder_ShowForm extends uDataModule {
 				$this->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
 			}
 			
+			// format email
+			$emailResponse = null;
+			$emailContent = 'A user has submitted a form: '.$form['name']."\n\n";
+			foreach ($fields as $field) {
+				$emailContent .= $field['name'].': ';
+				if (isset($_POST['fb-field-'.$field['field_id']])) $emailContent .= $_POST['fb-field-'.$field['field_id']];
+				$emailContent .= "\n";
+				if ($field['email'] && !$emailResponse && isset($_POST['fb-field-'.$field['field_id']])) $emailResponse = $_POST['fb-field-'.$field['field_id']];
+			}
+			
 			// send emails
-			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],var_export($_POST,true));
+			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent);
+			if ($emailResponse)
+				uEmailer::SendEmail($emailResponse,$form['email_response_subject'],$form['email_response']);
+			
 			return $form['screen_response']?$form['screen_response']:'';
 		} while (false);
-		
 		$output = '<div class="fb-form fb-form-'.$form['form_id'].' fb-form-'.$form['name'].'">';
 		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$form['form_header'].'</div>';
 		$output .= '<form action="" method="post" enctype="multipart/form-data">';
@@ -203,11 +237,12 @@ class formBuilder_ShowForm extends uDataModule {
 		foreach ($fields as $field) {
 			if (!$field['type']) continue;
 			$output .= '<div class="fb-fieldset">';
-			if ($field['type'] == 'email') $field['type'] = itTEXT;
-			$default = isset($_POST['fb-field-'.$field['field_id']]) ? $_POST['fb-field-'.$field['field_id']] : isset($field['default'])?$field['default']:'';
+			$default = $field['default'];
+			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
 			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$field['values'],array('class'=>'fb-field'));
 			// any error?
-			if (isset($field['error'])) uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
+			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
+				$output .= '<span class="fb-error">'.$field['error'].'</span>';
 			$output .= '</div>';
 		}
 		$output .= '</div>';
