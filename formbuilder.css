@@ -1,0 +1,10 @@
+.fb-form { overflow:hidden }
+.fb-form form { float:left; }
+.fb-form .fb-fields { float:left; }
+.fb-form .fb-fieldset { float:left; display:block; clear:both; }
+.fb-form .fb-fieldname {
+	display:block; float:left; width:150px; clear:both;
+}
+.fb-form .fb-submit {
+	clear:both; float:right;
+}
