@@ -224,7 +224,7 @@ class formBuilder_ShowForm extends uDataModule {
 			
 			// send emails
 			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent);
-			if ($emailResponse)
+			if ($emailResponse && $form['email_response_subject'] && $form['email_response'])
 				uEmailer::SendEmail($emailResponse,$form['email_response_subject'],$form['email_response']);
 			
 			return $form['screen_response']?$form['screen_response']:'';
