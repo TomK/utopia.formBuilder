@@ -198,6 +198,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$subPk = NULL;
 			$o->UpdateField('form_id',$form['form_id'],$subPk);
 			
+			$attachments = array();
 			foreach ($fields as $field) {
 				$dPk = NULL;
 				$this->UpdateFields(array(
@@ -207,6 +208,7 @@ class formBuilder_ShowForm extends uDataModule {
 				// add to database
 				if ($field['type']==itFILE && isset($_FILES['fb-field-'.$field['field_id']])) {
 					$this->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
+					$attachments[] = Swift_Attachment::newInstance(file_get_contents($_FILES['fb-field-'.$field['field_id']]['tmp_name']), $_FILES['fb-field-'.$field['field_id']]['name'], $_FILES['fb-field-'.$field['field_id']]['type']);
 					continue;
 				}
 				$this->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
@@ -223,7 +225,7 @@ class formBuilder_ShowForm extends uDataModule {
 			}
 			
 			// send emails
-			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent);
+			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent,NULL,$attachments);
 			if ($emailResponse && $form['email_response_subject'] && $form['email_response'])
 				uEmailer::SendEmail($emailResponse,$form['email_response_subject'],$form['email_response']);
 			
