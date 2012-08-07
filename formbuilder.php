@@ -185,7 +185,7 @@ class formBuilder_ShowForm extends uDataModule {
 					$verified = false; continue;
 				}
 				// required?
-				if ($field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) {
+				if ($field['required'] && ((!isset($_POST['fb-field-'.$field['field_id']]) || !$_POST['fb-field-'.$field['field_id']]) && (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']))) {
 					$fields[$k]['error'] = 'This field is required.';
 					$verified = false; continue;
 				}
@@ -206,7 +206,8 @@ class formBuilder_ShowForm extends uDataModule {
 					'field'			=> $field['name'],
 				),$dPk);
 				// add to database
-				if ($field['type']==itFILE && isset($_FILES['fb-field-'.$field['field_id']])) {
+				if ($field['type'] === itFILE) {
+					if (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']) continue;
 					$this->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
 					$attachments[] = Swift_Attachment::newInstance(file_get_contents($_FILES['fb-field-'.$field['field_id']]['tmp_name']), $_FILES['fb-field-'.$field['field_id']]['name'], $_FILES['fb-field-'.$field['field_id']]['type']);
 					continue;
@@ -219,7 +220,8 @@ class formBuilder_ShowForm extends uDataModule {
 			$emailContent = 'A user has submitted a form: '.$form['name']."\n\n";
 			foreach ($fields as $field) {
 				$emailContent .= $field['name'].': ';
-				if (isset($_POST['fb-field-'.$field['field_id']])) $emailContent .= $_POST['fb-field-'.$field['field_id']];
+				if ($field['type'] === itFILE && (isset($_FILES['fb-field-'.$field['field_id']]) && $_FILES['fb-field-'.$field['field_id']]['tmp_name'])) $emailContent .= $_FILES['fb-field-'.$field['field_id']]['name'].' (Attached)';
+				elseif (isset($_POST['fb-field-'.$field['field_id']])) $emailContent .= $_POST['fb-field-'.$field['field_id']];
 				$emailContent .= "\n";
 				if ($field['email'] && !$emailResponse && isset($_POST['fb-field-'.$field['field_id']])) $emailResponse = $_POST['fb-field-'.$field['field_id']];
 			}
