@@ -51,7 +51,7 @@ class formBuilderAdmin_FormsDetail extends uSingleDataModule implements iAdminMo
 		$this->AddSpacer();
 		$this->NewSection('Email Response');
 		$this->AddField('email_response_subject','email_response_subject','forms','Subject',itTEXT);
-		$this->AddField('email_response','email_response','forms','Content',itTEXTAREA);
+		$this->AddField('email_response','email_response','forms','Content',itHTML);
 	}
 	public function UpdateField($fieldAlias,$newValue,&$pkVal=NULL) {
 		if ($fieldAlias == 'name') $newValue = UrlReadable($newValue);
