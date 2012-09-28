@@ -98,7 +98,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('form_name','name','form','Form');
 		
 		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Disable',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itFILE=>'File Upload'));
+		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Disable',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload'));
 		$this->AddField('default','default','fields','Default',itTEXT);
 		
 		// validation
@@ -106,7 +106,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('email','email','fields','Email',itCHECKBOX);
 		$this->AddField('validation','validation','fields','Validation (Regex)',itTEXT);
 		
-		$this->AddField('values','values','fields');
+		$this->AddField('values','values','fields','Values',itTEXTAREA);
 		
 		$this->AddFilter('form_id',ctEQ,itNONE);
 		$this->AddFilter('form_name',ctEQ,itNONE);
@@ -155,12 +155,9 @@ class formBuilder_ShowForm extends uDataModule {
 	public function RunModule() { utopia::PageNotFound(); }
 	public function ShowForm($id) {
 		$obj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
-		if (!is_numeric($id)) {
-			$form = $obj->LookupRecord(array('form_name'=>$id),true);
-		} else {
-			$form = $obj->LookupRecord(array('form_id'=>$id),true);
-		}
 		
+		$form = $obj->LookupRecord(array('form_id'=>$id),true);
+		if (!$form) $form = $obj->LookupRecord(array('form_name'=>$id),true);
 		if (!$form) return 'No Form Found';
 		$id = $form['form_id'];
 		
@@ -221,7 +218,12 @@ class formBuilder_ShowForm extends uDataModule {
 			foreach ($fields as $field) {
 				$emailContent .= $field['name'].': ';
 				if ($field['type'] === itFILE && (isset($_FILES['fb-field-'.$field['field_id']]) && $_FILES['fb-field-'.$field['field_id']]['tmp_name'])) $emailContent .= $_FILES['fb-field-'.$field['field_id']]['name'].' (Attached)';
-				elseif (isset($_POST['fb-field-'.$field['field_id']])) $emailContent .= $_POST['fb-field-'.$field['field_id']];
+				elseif (isset($_POST['fb-field-'.$field['field_id']])) {
+					if ($field['values']) {
+						$fv = explode(PHP_EOL,$field['values']);
+						$emailContent .= $fv[$_POST['fb-field-'.$field['field_id']]];
+					} else $emailContent .= $_POST['fb-field-'.$field['field_id']];
+				}
 				$emailContent .= "\n";
 				if ($field['email'] && !$emailResponse && isset($_POST['fb-field-'.$field['field_id']])) $emailResponse = $_POST['fb-field-'.$field['field_id']];
 			}
@@ -243,7 +245,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$output .= '<div class="fb-fieldset">';
 			$default = $field['default'];
 			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$field['values'],array('class'=>'fb-field'));
+			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,explode(PHP_EOL,$field['values']),array('class'=>'fb-field'));
 			// any error?
 			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
 				$output .= '<span class="fb-error">'.$field['error'].'</span>';
