@@ -72,7 +72,7 @@ class formBuilder_Fields extends uTableDef {
 		$this->AddField('name',ftVARCHAR,50);
 		$this->AddField('type',ftVARCHAR,50);
 		$this->AddField('default',ftVARCHAR,50);
-		$this->AddField('values',ftVARCHAR,50);
+		$this->AddField('values',ftTEXT);
 		$this->AddField('required',ftBOOL);
 		$this->AddField('email',ftBOOL);
 		$this->AddField('validation',ftVARCHAR,100);
