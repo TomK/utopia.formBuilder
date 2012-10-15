@@ -1,7 +1,7 @@
 .fb-form { overflow:hidden }
 .fb-form form { float:left; }
 .fb-form .fb-fields { float:left; }
-.fb-form .fb-fieldset { float:left; display:block; clear:both; margin-bottom:15px; }
+.fb-form .fb-fieldset { float:left; display:block; clear:both; margin-bottom:15px; width:100%; }
 .fb-form .fb-fieldname {
 	display:block; float:left; width:150px; clear:both;
 }

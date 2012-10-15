@@ -251,8 +251,10 @@ class formBuilder_ShowForm extends uDataModule {
 				$output .= '<span class="fb-error">'.$field['error'].'</span>';
 			$output .= '</div>';
 		}
-		$output .= '</div>';
+		$output .= '<div class="fb-fieldset">';
 		$output .= '<input class="fb-submit" type="submit" value="Send">';
+		$output .= '</div>';
+		$output .= '</div>';
 		$output .= '</form></div>';
 		return $output;
 	}
