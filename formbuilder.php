@@ -252,7 +252,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$output .= '</div>';
 		}
 		$output .= '</div>';
-		$output .= '<input class="fb-submit" type="submit">';
+		$output .= '<input class="fb-submit" type="submit" value="Send">';
 		$output .= '</form></div>';
 		return $output;
 	}
