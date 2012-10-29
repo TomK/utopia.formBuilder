@@ -71,7 +71,7 @@ class formBuilder_Fields extends uTableDef {
 		$this->AddField('form_id',ftNUMBER);
 		$this->AddField('name',ftVARCHAR,50);
 		$this->AddField('type',ftVARCHAR,50);
-		$this->AddField('default',ftVARCHAR,50);
+		$this->AddField('default',ftTEXT);
 		$this->AddField('values',ftTEXT);
 		$this->AddField('required',ftBOOL);
 		$this->AddField('email',ftBOOL);
@@ -98,7 +98,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('form_name','name','form','Form');
 		
 		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Disable',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload'));
+		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload'));
 		$this->AddField('default','default','fields','Default',itTEXT);
 		
 		// validation
@@ -157,7 +157,7 @@ class formBuilder_ShowForm extends uDataModule {
 		$obj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
 		
 		$form = $obj->LookupRecord(array('form_id'=>$id),true);
-		if (!$form) $form = $obj->LookupRecord(array('form_name'=>$id),true);
+		if (!$form) $form = $obj->LookupRecord(array('name'=>$id),true);
 		if (!$form) return 'No Form Found';
 		$id = $form['form_id'];
 		
@@ -216,6 +216,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$emailResponse = null;
 			$emailContent = 'A user has submitted a form: '.$form['name']."\n\n";
 			foreach ($fields as $field) {
+				if (!$field['type']) continue;
 				$emailContent .= $field['name'].': ';
 				if ($field['type'] === itFILE && (isset($_FILES['fb-field-'.$field['field_id']]) && $_FILES['fb-field-'.$field['field_id']]['tmp_name'])) $emailContent .= $_FILES['fb-field-'.$field['field_id']]['name'].' (Attached)';
 				elseif (isset($_POST['fb-field-'.$field['field_id']])) {
@@ -241,11 +242,11 @@ class formBuilder_ShowForm extends uDataModule {
 		$output .= '<input type="hidden" name="form_id" value="'.$id.'">';
 		$output .= '<div class="fb-fields">';
 		foreach ($fields as $field) {
-			if (!$field['type']) continue;
+			//if (!$field['type']) continue;
 			$output .= '<div class="fb-fieldset">';
 			$default = $field['default'];
 			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,explode(PHP_EOL,$field['values']),array('class'=>'fb-field'));
+			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,explode(PHP_EOL,$field['values']),array('class'=>'fb-field','placeholder'=>$field['name']));
 			// any error?
 			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
 				$output .= '<span class="fb-error">'.$field['error'].'</span>';
