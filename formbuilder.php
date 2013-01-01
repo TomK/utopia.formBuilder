@@ -162,7 +162,7 @@ class formBuilder_ShowForm extends uDataModule {
 		$id = $form['form_id'];
 		
 		$obj = utopia::GetInstance('formBuilderAdmin_Fields');
-		$fields = $obj->GetRows(array('form_id'=>$id));
+		$fields = $obj->GetDataset(array('form_id'=>$id))->fetchAll();
 		if (!$fields) return 'No Fields Found';
 		
 		do if (isset($_POST['form_id']) && $_POST['form_id'] == $id) {
@@ -237,7 +237,7 @@ class formBuilder_ShowForm extends uDataModule {
 			return $form['screen_response']?$form['screen_response']:'';
 		} while (false);
 		$output = '<div class="fb-form fb-form-'.$form['form_id'].' fb-form-'.$form['name'].'">';
-		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$form['form_header'].'</div>';
+		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$this->GetCell('form_header',$form).'</div>';
 		$output .= '<form action="" method="post" enctype="multipart/form-data">';
 		$output .= '<input type="hidden" name="form_id" value="'.$id.'">';
 		$output .= '<div class="fb-fields">';
