@@ -10,7 +10,9 @@ class formBuilder_Forms extends uTableDef {
 		
 		$this->AddField('form_header',ftTEXT);
 		
+		$this->AddField('success_redirect',ftVARCHAR,255);
 		$this->AddField('screen_response',ftTEXT);
+		
 		$this->AddField('email_response_subject',ftVARCHAR,250);
 		$this->AddField('email_response',ftTEXT);
 		
@@ -47,8 +49,9 @@ class formBuilderAdmin_FormsDetail extends uSingleDataModule implements iAdminMo
 		$this->AddField('name','name','forms','Form Name',itTEXT);
 		$this->AddField('recipient','recipient','forms','Form Recipient',itTEXT);
 		$this->AddField('form_header','form_header','forms','Form Header',itTEXT);
-		$this->AddField('screen_response','screen_response','forms','Successful Response (on screen)',itRICHTEXT);
 		$this->AddSpacer();
+		$this->AddField('success_redirect','success_redirect','forms','Redirect on Success',itTEXT);
+		$this->AddField('screen_response','screen_response','forms','Successful Response (on screen)',itRICHTEXT);
 		$this->NewSection('Email Response');
 		$this->AddField('email_response_subject','email_response_subject','forms','Subject',itTEXT);
 		$this->AddField('email_response','email_response','forms','Content',itHTML);
@@ -233,6 +236,10 @@ class formBuilder_ShowForm extends uDataModule {
 			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent,NULL,$attachments);
 			if ($emailResponse && $form['email_response_subject'] && $form['email_response'])
 				uEmailer::SendEmail($emailResponse,$form['email_response_subject'],$form['email_response']);
+			
+			if ($form['success_redirect']) {
+				header('Location: '.$form['success_redirect']);
+			}
 			
 			return $form['screen_response']?$form['screen_response']:'';
 		} while (false);
