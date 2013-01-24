@@ -136,14 +136,13 @@ class formBuilder_SubmissionData extends uTableDef {
 		$this->AddField('data_id',ftNUMBER);
 		$this->AddField('submission_id',ftNUMBER);
 		$this->AddField('field',ftVARCHAR,50);
-		$this->AddField('value',ftLONGTEXT);
+		$this->AddField('value',ftFILE);
 		$this->SetPrimaryKey('data_id');
 		$this->SetIndexField('submission_id');
 	}
 }
 utopia::AddTemplateParser('form',array(utopia::GetInstance('formBuilder_ShowForm'),'ShowForm'));
 class formBuilder_ShowForm extends uDataModule {
-	public function GetTitle() { return 'Form Fields'; }
 	public function GetOptions() { return ALLOW_FILTER | ALLOW_ADD | ALLOW_DELETE | ALLOW_EDIT; }
 	public function GetTableDef() { return 'formBuilder_SubmissionData'; }
 	public function SetupParents() {
@@ -203,7 +202,7 @@ class formBuilder_ShowForm extends uDataModule {
 				$dPk = NULL;
 				$this->UpdateFields(array(
 					'submission_id'	=> $subPk,
-					'field'			=> $field['name'],
+					'field'			=> $field['field_id'],
 				),$dPk);
 				// add to database
 				if ($field['type'] === itFILE) {
@@ -269,30 +268,37 @@ class formBuilder_ShowForm extends uDataModule {
 }
 
 
-
 class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModule {
-	public function GetTitle() { return 'Form Fields'; }
-	public function GetOptions() { return ALLOW_FILTER | ALLOW_DELETE; }
-	public function GetTableDef() { return 'formBuilder_Fields'; }
+	public function GetTitle() { return 'Submissions'; }
+	public function GetOptions() { return null; }
+	public function GetTableDef() { return 'formBuilder_Submissions'; }
 	public function SetupParents() {
-		$this->AddParent('formBuilderAdmin_Forms','form_id');
-		$this->AddParent('formBuilderAdmin_Forms','form_id','edit_fields');
+		$this->AddParent('formBuilderAdmin_FormsDetail','form_id');
 	}
 	public function SetupFields() {
-		$this->CreateTable('fields');
-		$this->CreateTable('form','formBuilder_Forms','fields','form_id','JOIN');
-		$this->AddField('form_id','form_id','fields');
-		$this->AddField('form_name','name','form','Form');
+		$fltr = $this->FindFilter('form_id');
+		$formid = $this->GetFilterValue($fltr['uid']);
 		
-		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array('Disable'=>itNONE,'Text Box'=>itTEXT,'Multiline Text'=>itTEXTAREA));
-		$this->AddField('default','default','fields','default',itTEXT);
-		$this->AddField('values','values','fields','values',itTEXT);
+		$this->CreateTable('sub');
+		$this->CreateTable('data','formBuilder_SubmissionData','sub','submission_id');
+		$this->AddField('submission_date','date','sub','Submitted');
+
+		$o = utopia::GetInstance('formBuilderAdmin_Fields');
+		$ds = $o->GetDataset();
+		while (($row = $ds->fetch())) {
+			$this->AddField('field_'.$row['field_id'],'(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value}, NULL) ))','data',$row['name']);
+			if ($row['type'] === itFILE) {
+				$this->AddField('field_'.$row['field_id'].'_filename','(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value_filename}, NULL) ))','data');
+				$this->AddField('field_'.$row['field_id'].'_filetype','(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value_filetype}, NULL) ))','data');
+				$this->SetFieldType('field_'.$row['field_id'],ftFILE);
+			}
+		}
+		$this->AddOrderBy('submission_date');
+		$this->AddGrouping('submission_id');
+		
 	}
 	public function RunModule() { $this->ShowData(); }
 }
 
-
-// view submissions
-
+uEvents::AddCallback('AfterRunModule',array(utopia::GetInstance('formBuilderAdmin_Submissions'),'RunModule'),'formBuilderAdmin_FormsDetail');
 
