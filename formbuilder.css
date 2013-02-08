@@ -1,14 +1,14 @@
 .fb-form { overflow:hidden }
 .fb-form form { float:left; }
-.fb-form .fb-fields { float:left; }
-.fb-form .fb-fieldset { float:left; display:block; clear:both; margin-bottom:15px; width:100%; }
-.fb-form .fb-fieldname {
+.fb-fields { float:left; }
+.fb-fieldset { float:left; display:block; clear:both; margin-bottom:15px; width:100%; }
+.fb-fieldname {
 	display:block; float:left; width:150px; clear:both;
 }
-.fb-form .fb-field {
+.fb-field {
 	width: 200px;
 }
-.fb-form .fb-submit {
+.fb-submit {
 	clear:both; float:right;
 }
-.fb-form .fb-error { display:block; margin-left:150px; color: #f22; }
+.fb-error { display:block; margin-left:150px; color: #f22; }
