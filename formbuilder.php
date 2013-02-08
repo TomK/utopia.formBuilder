@@ -101,7 +101,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('form_name','name','form','Form');
 		
 		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload'));
+		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itCHECKBOX=>'Checkbox',itFILE=>'File Upload'));
 		$this->AddField('default','default','fields','Default',itTEXT);
 		
 		// validation
@@ -224,7 +224,13 @@ class formBuilder_ShowForm extends uDataModule {
 				elseif (isset($_POST['fb-field-'.$field['field_id']])) {
 					if ($field['values']) {
 						$fv = explode(PHP_EOL,$field['values']);
-						$emailContent .= $fv[$_POST['fb-field-'.$field['field_id']]];
+						$val = $_POST['fb-field-'.$field['field_id']];
+						if (!is_array($val)) $val = array($val);
+						$vals = array();
+						foreach ($val as $v) {
+							$vals[] = $fv[$v];
+						}
+						$emailContent .= implode(', ',$vals);
 					} else $emailContent .= $_POST['fb-field-'.$field['field_id']];
 				}
 				$emailContent .= "\n";
@@ -252,7 +258,8 @@ class formBuilder_ShowForm extends uDataModule {
 			$output .= '<div class="fb-fieldset">';
 			$default = $field['default'];
 			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,explode(PHP_EOL,$field['values']),array('class'=>'fb-field','placeholder'=>$field['name']));
+			$vals = $field['values']; if ($vals) $vals = explode(PHP_EOL,$field['values']);
+			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
 			// any error?
 			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
 				$output .= '<span class="fb-error">'.$field['error'].'</span>';
