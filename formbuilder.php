@@ -293,10 +293,10 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 		$o = utopia::GetInstance('formBuilderAdmin_Fields');
 		$ds = $o->GetDataset();
 		while (($row = $ds->fetch())) {
-			$this->AddField('field_'.$row['field_id'],'(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value}, NULL) ))','data',$row['name']);
+			$this->AddField('field_'.$row['field_id'],'(MAX( IF( {field} = \''.addslashes($row['name']).'\' OR {field} = \''.$row['field_id'].'\', {value}, NULL) ))','data',$row['name']);
 			if ($row['type'] === itFILE) {
-				$this->AddField('field_'.$row['field_id'].'_filename','(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value_filename}, NULL) ))','data');
-				$this->AddField('field_'.$row['field_id'].'_filetype','(MAX( IF( {field} = \''.$row['name'].'\' OR {field} = \''.$row['field_id'].'\', {value_filetype}, NULL) ))','data');
+				$this->AddField('field_'.$row['field_id'].'_filename','(MAX( IF( {field} = \''.addslashes($row['name']).'\' OR {field} = \''.$row['field_id'].'\', {value_filename}, NULL) ))','data');
+				$this->AddField('field_'.$row['field_id'].'_filetype','(MAX( IF( {field} = \''.addslashes($row['name']).'\' OR {field} = \''.$row['field_id'].'\', {value_filetype}, NULL) ))','data');
 				$this->SetFieldType('field_'.$row['field_id'],ftFILE);
 			}
 		}
