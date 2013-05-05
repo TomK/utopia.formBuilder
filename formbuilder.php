@@ -93,7 +93,9 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 	public function SetupParents() {
 		$this->AddParent('formBuilderAdmin_FormsDetail','form_id','');
 		uEvents::AddCallback('AfterRunModule',array(utopia::GetInstance('formBuilderAdmin_Fields'),'RunModule'),'formBuilderAdmin_FormsDetail');
+		if (class_exists('uRecaptcha')) self::$types[itRECAPTCHA] = 'Recaptcha';
 	}
+	public static $types = array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload');
 	public function SetupFields() {
 		$this->CreateTable('fields');
 		$this->CreateTable('form','formBuilder_Forms','fields','form_id');
@@ -101,7 +103,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->AddField('form_name','name','form','Form');
 		
 		$this->AddField('name','name','fields','Name',itTEXT);
-		$this->AddField('type','type','fields','Type',itCOMBO,array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itCHECKBOX=>'Checkbox',itFILE=>'File Upload'));
+		$this->AddField('type','type','fields','Type',itCOMBO,self::$types);
 		$this->AddField('default','default','fields','Default',itTEXT);
 		
 		// validation
@@ -172,6 +174,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$verified = true;
 			foreach ($fields as $k=> $field) {
 				if (!$field['type']) continue;
+				if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA && uRecaptcha::IsValid() !== TRUE) { $verified = false; continue; }
 				if (!$field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) continue;
 				
 				// verify form fields, add [error]s if needed
