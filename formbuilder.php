@@ -237,6 +237,8 @@ class formBuilder_ShowForm extends uDataModule {
 				if ($field['email'] && !$emailResponse && isset($_POST['fb-field-'.$field['field_id']])) $emailResponse = $_POST['fb-field-'.$field['field_id']];
 			}
 			
+			uEvents::TriggerEvent('FormBuilderSubmission',null,array($form,$fields,$_POST));
+			
 			// send emails
 			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent,NULL,$attachments);
 			if ($emailResponse && $form['email_response_subject'] && $form['email_response'])
