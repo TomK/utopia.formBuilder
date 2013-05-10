@@ -242,6 +242,10 @@ class formBuilder_ShowForm extends uDataModule {
 			
 			uEvents::TriggerEvent('FormBuilderSubmission',null,array($form,$fields,$_POST));
 			
+			if (class_exists('GoogleAnalytics')) {
+				GoogleAnalytics::TrackEvent('FormBuilder','Submit',$form['name']);
+			}
+			
 			// send emails
 			uEmailer::SendEmail($form['recipient'],'Form Completion: '.$form['name'],$emailContent,NULL,$attachments);
 			if ($emailResponse && $form['email_response_subject'] && $form['email_response'])
