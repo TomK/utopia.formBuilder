@@ -159,14 +159,17 @@ class formBuilder_ShowForm extends uDataModule {
 	public function RunModule() { utopia::PageNotFound(); }
 	public function ShowForm($id) {
 		$obj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
-		
+		$obj->BypassSecurity(true);
 		$form = $obj->LookupRecord(array('form_id'=>$id),true);
 		if (!$form) $form = $obj->LookupRecord(array('name'=>$id),true);
+		$obj->BypassSecurity(false);
 		if (!$form) return 'No Form Found';
 		$id = $form['form_id'];
 		
 		$obj = utopia::GetInstance('formBuilderAdmin_Fields');
+		$obj->BypassSecurity(true);
 		$fields = $obj->GetDataset(array('form_id'=>$id))->fetchAll();
+		$obj->BypassSecurity(false);
 		if (!$fields) return 'No Fields Found';
 		
 		do if (isset($_POST['form_id']) && $_POST['form_id'] == $id) {
@@ -300,7 +303,9 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 		$this->AddField('submission_date','date','sub','Submitted');
 
 		$o = utopia::GetInstance('formBuilderAdmin_Fields');
+		$o->BypassSecurity(true);
 		$ds = $o->GetDataset();
+		$o->BypassSecurity(false);
 		while (($row = $ds->fetch())) {
 			$this->AddField('field_'.$row['field_id'],'(MAX( IF( {field} = \''.addslashes($row['name']).'\' OR {field} = \''.$row['field_id'].'\', {value}, NULL) ))','data',$row['name']);
 			if ($row['type'] === itFILE) {
