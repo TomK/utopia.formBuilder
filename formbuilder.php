@@ -270,7 +270,7 @@ class formBuilder_ShowForm extends uDataModule {
 			$output .= '<div class="fb-fieldset">';
 			$default = $field['default'];
 			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$vals = $field['values']; if ($vals) $vals = explode(PHP_EOL,$field['values']);
+			$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
 			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
 			// any error?
 			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
