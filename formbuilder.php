@@ -270,15 +270,18 @@ class formBuilder_ShowForm extends uDataModule {
 		$output .= '<div class="fb-fields">';
 		foreach ($fields as $field) {
 			//if (!$field['type']) continue;
-			$output .= '<div class="fb-fieldset">';
-			$default = $field['default'];
-			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
-			$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
-			// any error?
-			if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
-				$output .= '<span class="fb-error">'.$field['error'].'</span>';
-			$output .= '</div>';
+			$input = utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
+			if ($input) {
+				$output .= '<div class="fb-fieldset">';
+				$default = $field['default'];
+				if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
+				$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
+				$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.$input;
+				// any error?
+				if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
+					$output .= '<span class="fb-error">'.$field['error'].'</span>';
+				$output .= '</div>';
+			}
 		}
 		$output .= '<div class="fb-fieldset">';
 		$output .= '<input class="fb-submit" type="submit" value="Send">';
