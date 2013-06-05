@@ -177,12 +177,15 @@ class formBuilder_ShowForm extends uDataModule {
 			$verified = true;
 			foreach ($fields as $k=> $field) {
 				if (!$field['type']) continue;
-				if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA && uRecaptcha::IsValid() !== TRUE) { $verified = false; continue; }
+				if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA && uRecaptcha::IsValid() !== TRUE) {
+					$fields[$k]['error'] = 'Recaptcha is incorrect.';
+					$verified = false; continue;
+				}
 				if (!$field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) continue;
 				
 				// verify form fields, add [error]s if needed
 				if ($field['email'] && !preg_match('/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i',$_POST['fb-field-'.$field['field_id']])) {
-					$fields[$k]['error'] = 'You must enter a valid email address';
+					$fields[$k]['error'] = 'You must enter a valid email address.';
 					$verified = false; continue;
 				}
 				if ($field['validation'] && !preg_match('/'.$field['validation'].'/i',$_POST['fb-field-'.$field['field_id']])) {
