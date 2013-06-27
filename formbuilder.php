@@ -158,11 +158,11 @@ class formBuilder_ShowForm extends uDataModule {
 	}
 	public function RunModule() { utopia::PageNotFound(); }
 	public function ShowForm($id) {
-		$obj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
-		$obj->BypassSecurity(true);
-		$form = $obj->LookupRecord(array('form_id'=>$id),true);
-		if (!$form) $form = $obj->LookupRecord(array('name'=>$id),true);
-		$obj->BypassSecurity(false);
+		$frmObj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
+		$frmObj->BypassSecurity(true);
+		$form = $frmObj->LookupRecord(array('form_id'=>$id),true);
+		if (!$form) $form = $frmObj->LookupRecord(array('name'=>$id),true);
+		$frmObj->BypassSecurity(false);
 		if (!$form) return 'No Form Found';
 		$id = $form['form_id'];
 		
@@ -264,18 +264,18 @@ class formBuilder_ShowForm extends uDataModule {
 			return $form['screen_response']?$form['screen_response']:'';
 		} while (false);
 		$output = '<div class="fb-form fb-form-'.$form['form_id'].' fb-form-'.$form['name'].'">';
-		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$this->GetCell('form_header',$form).'</div>';
+		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$frmObj->GetCell('form_header',$form).'</div>';
 		$output .= '<form action="" method="post" enctype="multipart/form-data">';
 		$output .= '<input type="hidden" name="form_id" value="'.$id.'">';
 		$output .= '<div class="fb-fields">';
 		foreach ($fields as $field) {
 			//if (!$field['type']) continue;
+			$default = $field['default'];
+			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
+			$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
 			$input = utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
 			if ($input) {
 				$output .= '<div class="fb-fieldset">';
-				$default = $field['default'];
-				if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-				$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
 				$output .= '<span class="fb-fieldname">'.$field['name'].'</span>'.$input;
 				// any error?
 				if (isset($field['error'])) // uNotices::AddNotice($field['error'],NOTICE_TYPE_ERROR);
