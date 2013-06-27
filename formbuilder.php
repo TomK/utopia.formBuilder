@@ -264,7 +264,7 @@ class formBuilder_ShowForm extends uDataModule {
 			return $form['screen_response']?$form['screen_response']:'';
 		} while (false);
 		$output = '<div class="fb-form fb-form-'.$form['form_id'].' fb-form-'.$form['name'].'">';
-		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$frmObj->GetCell('form_header',$form).'</div>';
+		if (isset($form['form_header'])) $output .= '<div class="fb-head">'.$form['form_header'].'</div>';
 		$output .= '<form action="" method="post" enctype="multipart/form-data">';
 		$output .= '<input type="hidden" name="form_id" value="'.$id.'">';
 		$output .= '<div class="fb-fields">';
