@@ -177,9 +177,12 @@ class formBuilder_ShowForm extends uDataModule {
 			$verified = true;
 			foreach ($fields as $k=> $field) {
 				if (!$field['type']) continue;
-				if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA && uRecaptcha::IsValid() !== TRUE) {
-					$fields[$k]['error'] = 'Recaptcha is incorrect.';
-					$verified = false; continue;
+				if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA) {
+					if (uRecaptcha::IsValid() !== TRUE) {
+						$fields[$k]['error'] = 'Recaptcha is incorrect.';
+						$verified = false;
+					}
+					continue;
 				}
 				if (!$field['required'] && (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] == '')) continue;
 				
