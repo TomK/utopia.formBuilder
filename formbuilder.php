@@ -196,9 +196,46 @@ class formBuilder_ShowForm extends uDataModule {
 					$verified = false; continue;
 				}
 				// required?
-				if ($field['required'] && ((!isset($_POST['fb-field-'.$field['field_id']]) || !$_POST['fb-field-'.$field['field_id']]) && (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']))) {
-					$fields[$k]['error'] = 'This field is required.';
-					$verified = false; continue;
+				if ($field['required']) {
+					if ($field['type'] == itFILE) {
+						if (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']) {
+							$fields[$k]['error'] = 'This field is required.';
+							if ($_FILES['fb-field-'.$field['field_id']]['error'] !== UPLOAD_ERR_OK) {
+								switch ($_FILES['fb-field-'.$field['field_id']]['error']) { 
+									case UPLOAD_ERR_INI_SIZE: 
+										$message = "The uploaded file exceeds the upload_max_filesize directive."; 
+										break; 
+									case UPLOAD_ERR_FORM_SIZE: 
+										$message = "The uploaded file exceeds the MAX_FILE_SIZE directive."; 
+										break; 
+									case UPLOAD_ERR_PARTIAL: 
+										$message = "The uploaded file was only partially uploaded."; 
+										break; 
+									case UPLOAD_ERR_NO_FILE: 
+										$message = "This field is required."; 
+										break; 
+									case UPLOAD_ERR_NO_TMP_DIR: 
+										$message = "Missing a temporary folder."; 
+										break; 
+									case UPLOAD_ERR_CANT_WRITE: 
+										$message = "Failed to write file to disk."; 
+										break; 
+									case UPLOAD_ERR_EXTENSION: 
+										$message = "File upload stopped by extension."; 
+										break; 
+									default: 
+										$message = "Unknown upload error"; 
+										break; 
+								} 
+								$fields[$k]['error'] = $message;
+							}
+							$verified = false;
+						}
+					} else if (!isset($_POST['fb-field-'.$field['field_id']]) || !$_POST['fb-field-'.$field['field_id']]) {
+						$fields[$k]['error'] = 'This field is required.';
+						$verified = false;
+					}
+					continue;
 				}
 			}
 			// break if not verified
