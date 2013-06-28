@@ -246,22 +246,26 @@ class formBuilder_ShowForm extends uDataModule {
 			$subPk = NULL;
 			$o->UpdateField('form_id',$form['form_id'],$subPk);
 			
+			$failed = false;
 			$attachments = array();
-			foreach ($fields as $field) {
-				$dPk = NULL;
-				$this->UpdateFields(array(
-					'submission_id'	=> $subPk,
-					'field'			=> $field['field_id'],
-				),$dPk);
-				// add to database
-				if ($field['type'] === itFILE) {
-					if (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']) continue;
-					$this->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
-					$attachments[] = Swift_Attachment::newInstance(file_get_contents($_FILES['fb-field-'.$field['field_id']]['tmp_name']), $_FILES['fb-field-'.$field['field_id']]['name'], $_FILES['fb-field-'.$field['field_id']]['type']);
-					continue;
-				}
-				$this->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
+			foreach ($fields as $k => $field) {
+				try {
+					$dPk = NULL;
+					$this->UpdateFields(array(
+						'submission_id'	=> $subPk,
+						'field'			=> $field['field_id'],
+					),$dPk);
+					// add to database
+					if ($field['type'] === itFILE) {
+						if (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']) continue;
+						$this->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
+						$attachments[] = Swift_Attachment::newInstance(file_get_contents($_FILES['fb-field-'.$field['field_id']]['tmp_name']), $_FILES['fb-field-'.$field['field_id']]['name'], $_FILES['fb-field-'.$field['field_id']]['type']);
+						continue;
+					}
+					$this->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
+				} catch (Exception $e) { $fields[$k]['error'] = $e->getMessage(); $failed = true; }
 			}
+			if ($failed) break;
 			
 			// format email
 			$emailResponse = null;
