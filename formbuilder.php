@@ -272,8 +272,8 @@ class formBuilder_ShowForm extends uDataModule {
 			$emailContent = 'A user has submitted a form: '.$form['name']."\n\n";
 			foreach ($fields as $field) {
 				if (!$field['type']) continue;
-				$emailContent .= $field['name'].': ';
-				if ($field['type'] === itFILE && (isset($_FILES['fb-field-'.$field['field_id']]) && $_FILES['fb-field-'.$field['field_id']]['tmp_name'])) $emailContent .= $_FILES['fb-field-'.$field['field_id']]['name'].' (Attached)';
+				$emailVal = '';
+				if ($field['type'] === itFILE && (isset($_FILES['fb-field-'.$field['field_id']]) && $_FILES['fb-field-'.$field['field_id']]['tmp_name'])) $emailVal = $_FILES['fb-field-'.$field['field_id']]['name'].' (Attached)';
 				elseif (isset($_POST['fb-field-'.$field['field_id']])) {
 					if ($field['values']) {
 						$fv = explode(PHP_EOL,$field['values']);
@@ -283,10 +283,11 @@ class formBuilder_ShowForm extends uDataModule {
 						foreach ($val as $v) {
 							$vals[] = $fv[$v];
 						}
-						$emailContent .= implode(', ',$vals);
-					} else $emailContent .= $_POST['fb-field-'.$field['field_id']];
+						$emailVal = implode(', ',$vals);
+					} else $emailVal = $_POST['fb-field-'.$field['field_id']];
 				}
-				$emailContent .= "\n";
+				if (!$field['name'] && !$emailVal) continue;
+				$emailContent .= $field['name'].': '.$emailVal."\n";
 				if ($field['email'] && !$emailResponse && isset($_POST['fb-field-'.$field['field_id']])) $emailResponse = $_POST['fb-field-'.$field['field_id']];
 			}
 			
