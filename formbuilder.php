@@ -100,9 +100,9 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		$this->CreateTable('fields');
 		$this->CreateTable('form','formBuilder_Forms','fields','form_id');
 		$this->AddField('form_id','form_id','fields');
-		$this->AddField('form_name','name','form','Form');
+		$this->AddField('form_name','name','form');
 		
-		$this->AddField('name','name','fields','Name',itTEXT);
+		$this->AddField('name','name','fields','Field Title',itTEXT);
 		$this->AddField('type','type','fields','Type',itCOMBO,self::$types);
 		$this->AddField('default','default','fields','Default',itTEXT);
 		
