@@ -233,7 +233,7 @@ class formBuilder_ShowForm extends uDataModule {
 							}
 							$verified = false;
 						}
-					} else if (!isset($_POST['fb-field-'.$field['field_id']]) || !$_POST['fb-field-'.$field['field_id']]) {
+					} else if (!isset($_POST['fb-field-'.$field['field_id']]) || $_POST['fb-field-'.$field['field_id']] === '') {
 						$fields[$k]['error'] = 'This field is required.';
 						$verified = false;
 					}
@@ -319,7 +319,7 @@ class formBuilder_ShowForm extends uDataModule {
 			//if (!$field['type']) continue;
 			$default = $field['default'];
 			if (isset($_POST['fb-field-'.$field['field_id']])) $default = $_POST['fb-field-'.$field['field_id']];
-			$vals = $field['values']; if ($vals) $vals = utopia::stringify(explode(PHP_EOL,$field['values']));
+			$vals = $field['values']; if ($vals) $vals = explode(PHP_EOL,$field['values']);
 			$input = utopia::DrawInput('fb-field-'.$field['field_id'],$field['type'],$default,$vals,array('class'=>'fb-field','placeholder'=>$field['name']));
 			if ($input) {
 				$output .= '<div class="fb-fieldset">';
