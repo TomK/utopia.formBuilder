@@ -113,6 +113,8 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 		
 		$this->AddField('values','values','fields','Values',itTEXTAREA);
 		
+		$this->AddOrderBy('field_id');
+		
 		$this->AddFilter('form_id',ctEQ,itNONE);
 		$this->AddFilter('form_name',ctEQ,itNONE);
 	}
