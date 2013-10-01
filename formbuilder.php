@@ -23,8 +23,10 @@ class formBuilderAdmin_Forms extends uListDataModule implements iAdminModule {
 	public function GetTitle() { return 'Form Builder'; }
 	public function GetOptions() { return ALLOW_FILTER | ALLOW_DELETE | ALLOW_EDIT; }
 	public function GetTableDef() { return 'formBuilder_Forms'; }
-	public function SetupParents() {
-		$this->AddParent('/');
+	public function GetSortOrder() { return -8850; }
+	public function SetupParents() {}
+	public static function Initialise() {
+		self::AddParent('/');
 	}
 	public function SetupFields() {
 		$this->CreateTable('forms');
@@ -41,8 +43,9 @@ class formBuilderAdmin_FormsDetail extends uSingleDataModule implements iAdminMo
 	public function GetTitle() { return 'Edit Form'; }
 	public function GetOptions() { return ALLOW_FILTER | ALLOW_ADD | ALLOW_DELETE | ALLOW_EDIT; }
 	public function GetTableDef() { return 'formBuilder_Forms'; }
-	public function SetupParents() {
-		$this->AddParent('formBuilderAdmin_Forms','form_id','*');
+	public function SetupParents() {}
+	public static function Initialise() {
+		self::AddParent('formBuilderAdmin_Forms','form_id','*');
 	}
 	public function SetupFields() {
 		$this->CreateTable('forms');
@@ -90,10 +93,14 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 	public function GetTitle() { return 'Form Fields'; }
 	public function GetOptions() { return ALLOW_FILTER | ALLOW_ADD | ALLOW_DELETE | ALLOW_EDIT; }
 	public function GetTableDef() { return 'formBuilder_Fields'; }
-	public function SetupParents() {
-		$this->AddParent('formBuilderAdmin_FormsDetail','form_id','');
-		uEvents::AddCallback('AfterRunModule',array(utopia::GetInstance('formBuilderAdmin_Fields'),'RunModule'),'formBuilderAdmin_FormsDetail');
+	public function SetupParents() {}
+	public static function Initialise() {
+		self::AddParent('formBuilderAdmin_FormsDetail','form_id','');
+		uEvents::AddCallback('AfterRunModule','formBuilderAdmin_Fields::RunChild','formBuilderAdmin_FormsDetail');
 		if (class_exists('uRecaptcha')) self::$types[itRECAPTCHA] = 'Recaptcha';
+	}
+	public static function RunChild() {
+		utopia::GetInstance('formBuilderAdmin_Fields')->RunModule();
 	}
 	public static $types = array(itNONE=>'Text only',itTEXT=>'Text Box',itTEXTAREA=>'Multiline Text',itCOMBO=>'Dropdown',itFILE=>'File Upload');
 	public function SetupFields() {
@@ -145,8 +152,14 @@ class formBuilder_SubmissionData extends uTableDef {
 		$this->SetIndexField('submission_id');
 	}
 }
-utopia::AddTemplateParser('form',array(utopia::GetInstance('formBuilder_ShowForm'),'ShowForm'));
 class formBuilder_ShowForm extends uDataModule {
+	public static function Initialise() {
+		utopia::AddTemplateParser('form','formBuilder_ShowForm::ShowForm');
+	}
+	public static function ShowFormCallback($id) {
+		$o = utopia::GetInstance(__CLASS__);
+		$o->ShowForm($id);
+	}
 	public function GetOptions() { return ALLOW_FILTER | ALLOW_ADD | ALLOW_DELETE | ALLOW_EDIT; }
 	public function GetTableDef() { return 'formBuilder_SubmissionData'; }
 	public function SetupParents() {
@@ -344,8 +357,13 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 	public function GetTitle() { return 'Submissions'; }
 	public function GetOptions() { return null; }
 	public function GetTableDef() { return 'formBuilder_Submissions'; }
-	public function SetupParents() {
-		$this->AddParent('formBuilderAdmin_FormsDetail','form_id');
+	public function SetupParents() {}
+	public static function Initialise() {
+		self::AddParent('formBuilderAdmin_FormsDetail','form_id');
+		uEvents::AddCallback('AfterRunModule','formBuilderAdmin_Submissions::RunChild','formBuilderAdmin_FormsDetail');
+	}
+	public static function RunChild() {
+		utopia::GetInstance('formBuilderAdmin_Submissions')->RunModule();
 	}
 	public function SetupFields() {
 		$fltr = $this->FindFilter('form_id');
@@ -373,6 +391,3 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 	}
 	public function RunModule() { $this->ShowData(); }
 }
-
-uEvents::AddCallback('AfterRunModule',array(utopia::GetInstance('formBuilderAdmin_Submissions'),'RunModule'),'formBuilderAdmin_FormsDetail');
-

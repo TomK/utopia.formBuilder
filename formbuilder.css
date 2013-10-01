@@ -12,3 +12,6 @@
 	clear:both; float:right;
 }
 .fb-error { display:block; margin-left:150px; color: #f22; }
+
+nav li._modlinks_formbuilderadmin_forms a:before { content:"\e81a"; }
+.module-container.formBuilderAdmin_FormsDetail h1:before { content:"\e81a"; }
