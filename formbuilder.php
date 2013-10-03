@@ -172,7 +172,8 @@ class formBuilder_ShowForm extends uDataModule {
 		$this->AddField('value','value','subdata');
 	}
 	public function RunModule() { utopia::PageNotFound(); }
-	public function ShowForm($id) {
+	public static function ShowForm($id) {
+		$thisObj = utopia::GetInstance('formBuilder_ShowForm');
 		$frmObj = utopia::GetInstance('formBuilderAdmin_FormsDetail');
 		$frmObj->BypassSecurity(true);
 		$form = $frmObj->LookupRecord(array('form_id'=>$id),true);
@@ -266,18 +267,18 @@ class formBuilder_ShowForm extends uDataModule {
 			foreach ($fields as $k => $field) {
 				try {
 					$dPk = NULL;
-					$this->UpdateFields(array(
+					$thisObj->UpdateFields(array(
 						'submission_id'	=> $subPk,
 						'field'			=> $field['field_id'],
 					),$dPk);
 					// add to database
 					if ($field['type'] === itFILE) {
 						if (!isset($_FILES['fb-field-'.$field['field_id']]) || !$_FILES['fb-field-'.$field['field_id']]['tmp_name']) continue;
-						$this->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
+						$thisObj->UploadFile('value',$_FILES['fb-field-'.$field['field_id']],$dPk);
 						$attachments[] = Swift_Attachment::newInstance(file_get_contents($_FILES['fb-field-'.$field['field_id']]['tmp_name']), $_FILES['fb-field-'.$field['field_id']]['name'], $_FILES['fb-field-'.$field['field_id']]['type']);
 						continue;
 					}
-					$this->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
+					$thisObj->UpdateField('value',$_POST['fb-field-'.$field['field_id']],$dPk);
 				} catch (Exception $e) { $fields[$k]['error'] = $e->getMessage(); $failed = true; }
 			}
 			if ($failed) break;
