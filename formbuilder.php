@@ -367,11 +367,9 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 		utopia::GetInstance('formBuilderAdmin_Submissions')->RunModule();
 	}
 	public function SetupFields() {
-		$fltr = $this->FindFilter('form_id');
-		$formid = $this->GetFilterValue($fltr['uid']);
-		
 		$this->CreateTable('sub');
 		$this->CreateTable('data','formBuilder_SubmissionData','sub','submission_id');
+		$this->AddField('form_id','form_id','sub');
 		$this->AddField('submission_date','date','sub','Submitted');
 
 		$o = utopia::GetInstance('formBuilderAdmin_Fields');
