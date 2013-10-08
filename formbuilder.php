@@ -384,7 +384,7 @@ class formBuilderAdmin_Submissions extends uListDataModule implements iAdminModu
 				$this->SetFieldType('field_'.$row['field_id'],ftFILE);
 			}
 		}
-		$this->AddOrderBy('submission_date');
+		$this->AddOrderBy('submission_date','DESC');
 		$this->AddGrouping('submission_id');
 		
 	}
