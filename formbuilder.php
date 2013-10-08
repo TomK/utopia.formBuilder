@@ -95,7 +95,7 @@ class formBuilderAdmin_Fields extends uListDataModule implements iAdminModule {
 	public function GetTableDef() { return 'formBuilder_Fields'; }
 	public function SetupParents() {}
 	public static function Initialise() {
-		self::AddParent('formBuilderAdmin_FormsDetail','form_id','');
+		self::AddParent('formBuilderAdmin_FormsDetail','form_id');
 		uEvents::AddCallback('AfterRunModule','formBuilderAdmin_Fields::RunChild','formBuilderAdmin_FormsDetail');
 		if (class_exists('uRecaptcha')) self::$types[itRECAPTCHA] = 'Recaptcha';
 	}
