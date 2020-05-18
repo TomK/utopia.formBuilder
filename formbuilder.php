@@ -266,6 +266,9 @@ class formBuilder_ShowForm extends uDataModule {
 			$attachments = array();
 			foreach ($fields as $k => $field) {
 				try {
+					if (class_exists('uRecaptcha') && $field['type'] == itRECAPTCHA) {
+						continue;
+					}
 					$dPk = NULL;
 					$thisObj->UpdateFields(array(
 						'submission_id'	=> $subPk,
